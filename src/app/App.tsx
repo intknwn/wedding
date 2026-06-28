@@ -1,13 +1,118 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
+
+const ALBUM_PHOTOS = [
+  { src: "https://images.unsplash.com/photo-1765292783362-91affd475cb7?w=1600&h=2000&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1765292783362-91affd475cb7?w=800&h=1000&fit=crop&auto=format", alt: "Couple holding hands outdoors" },
+  { src: "https://images.unsplash.com/photo-1765292783735-9ec7213b1df1?w=1600&h=1200&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1765292783735-9ec7213b1df1?w=800&h=600&fit=crop&auto=format", alt: "Couple by black car with umbrella" },
+  { src: "https://images.unsplash.com/photo-1765292783732-ca81c5b69e25?w=1600&h=1200&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1765292783732-ca81c5b69e25?w=800&h=600&fit=crop&auto=format", alt: "Couple posing playfully outdoors" },
+  { src: "https://images.unsplash.com/photo-1772412933375-6136edede0b2?w=1200&h=1800&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1772412933375-6136edede0b2?w=800&h=1000&fit=crop&auto=format", alt: "Couple by brick building" },
+  { src: "https://images.unsplash.com/photo-1765292783731-f130214ca53e?w=1200&h=1600&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1765292783731-f130214ca53e?w=600&h=800&fit=crop&auto=format", alt: "Bride with decorative umbrella" },
+];
+
+function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: () => void; onPrev: () => void; onNext: () => void }) {
+  const photo = ALBUM_PHOTOS[index];
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose, onPrev, onNext]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/95" onClick={onClose} />
+
+      {/* Close */}
+      <button
+        onClick={onClose}
+        className="absolute top-6 right-6 z-10 flex items-center gap-2.5 font-mono text-[11px] tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors"
+        aria-label="Close gallery"
+      >
+        <span>Close</span>
+        <div className="relative w-5 h-5">
+          <span className="absolute inset-0 flex items-center justify-center rotate-45 text-lg leading-none">+</span>
+        </div>
+      </button>
+
+      {/* Counter */}
+      <div className="absolute top-6 left-6 z-10 font-mono text-[11px] tracking-[0.2em] text-white/40">
+        {String(index + 1).padStart(2, "0")} / {String(ALBUM_PHOTOS.length).padStart(2, "0")}
+      </div>
+
+      {/* Image */}
+      <motion.div
+        key={index}
+        className="relative z-10 flex items-center justify-center px-16 md:px-24 w-full h-full"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          className="max-h-[85vh] max-w-full object-contain select-none"
+          draggable={false}
+        />
+      </motion.div>
+
+      {/* Prev */}
+      <button
+        onClick={onPrev}
+        className="absolute left-4 md:left-8 z-10 w-10 h-10 flex items-center justify-center border border-white/20 text-white/50 hover:text-white hover:border-white/50 transition-colors"
+        aria-label="Previous photo"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Next */}
+      <button
+        onClick={onNext}
+        className="absolute right-4 md:right-8 z-10 w-10 h-10 flex items-center justify-center border border-white/20 text-white/50 hover:text-white hover:border-white/50 transition-colors"
+        aria-label="Next photo"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Thumbnail strip */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {ALBUM_PHOTOS.map((p, i) => (
+          <button
+            key={i}
+            onClick={(e) => { e.stopPropagation(); }}
+            onMouseDown={(e) => { e.stopPropagation(); }}
+            className="transition-all duration-300 overflow-hidden"
+            style={{ width: i === index ? 48 : 32, height: 32, opacity: i === index ? 1 : 0.4, border: i === index ? "1px solid rgba(255,255,255,0.6)" : "1px solid transparent" }}
+            aria-label={`Go to photo ${i + 1}`}
+          >
+            <img src={p.thumb} alt="" className="w-full h-full object-cover" />
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
 
 const PHOTOS = {
   hero: "https://images.unsplash.com/photo-1731566971965-acfb1151fc34?w=1600&h=900&fit=crop&auto=format",
-  album1: "https://images.unsplash.com/photo-1765292783362-91affd475cb7?w=800&h=1000&fit=crop&auto=format",
-  album2: "https://images.unsplash.com/photo-1765292783735-9ec7213b1df1?w=800&h=600&fit=crop&auto=format",
-  album3: "https://images.unsplash.com/photo-1772412933375-6136edede0b2?w=800&h=1000&fit=crop&auto=format",
-  album4: "https://images.unsplash.com/photo-1765292783732-ca81c5b69e25?w=800&h=600&fit=crop&auto=format",
-  album5: "https://images.unsplash.com/photo-1765292783731-f130214ca53e?w=600&h=800&fit=crop&auto=format",
   venue: "https://images.unsplash.com/photo-1666617710768-425d2d9088f8?w=1200&h=700&fit=crop&auto=format",
 };
 
@@ -69,6 +174,12 @@ export default function App() {
   const [submitted, setSubmitted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const openLightbox = useCallback((i: number) => setLightboxIndex(i), []);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const prevPhoto = useCallback(() => setLightboxIndex(i => i !== null ? (i - 1 + ALBUM_PHOTOS.length) % ALBUM_PHOTOS.length : null), []);
+  const nextPhoto = useCallback(() => setLightboxIndex(i => i !== null ? (i + 1) % ALBUM_PHOTOS.length : null), []);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60);
@@ -90,6 +201,9 @@ export default function App() {
 
   return (
     <div className="bg-background text-foreground min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {lightboxIndex !== null && (
+        <Lightbox index={lightboxIndex} onClose={closeLightbox} onPrev={prevPhoto} onNext={nextPhoto} />
+      )}
       {/* NAV */}
       <header
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
@@ -200,29 +314,34 @@ export default function App() {
         </Reveal>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           <Reveal delay={0.05} className="col-span-1 row-span-2">
-            <div className="bg-muted h-full min-h-[320px] overflow-hidden">
-              <img src={PHOTOS.album1} alt="Couple holding hands outdoors" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-            </div>
+            <button onClick={() => openLightbox(0)} className="group block bg-muted h-full min-h-[320px] overflow-hidden w-full relative cursor-zoom-in">
+              <img src={ALBUM_PHOTOS[0].thumb} alt={ALBUM_PHOTOS[0].alt} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </button>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="bg-muted aspect-[4/3] overflow-hidden">
-              <img src={PHOTOS.album2} alt="Couple by black car with umbrella" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-            </div>
+            <button onClick={() => openLightbox(1)} className="group block bg-muted aspect-[4/3] overflow-hidden w-full relative cursor-zoom-in">
+              <img src={ALBUM_PHOTOS[1].thumb} alt={ALBUM_PHOTOS[1].alt} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </button>
           </Reveal>
           <Reveal delay={0.15}>
-            <div className="bg-muted aspect-[4/3] overflow-hidden">
-              <img src={PHOTOS.album4} alt="Couple posing playfully outdoors" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-            </div>
+            <button onClick={() => openLightbox(2)} className="group block bg-muted aspect-[4/3] overflow-hidden w-full relative cursor-zoom-in">
+              <img src={ALBUM_PHOTOS[2].thumb} alt={ALBUM_PHOTOS[2].alt} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </button>
           </Reveal>
           <Reveal delay={0.2} className="col-span-1">
-            <div className="bg-muted aspect-square overflow-hidden">
-              <img src={PHOTOS.album3} alt="Couple by brick building" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-            </div>
+            <button onClick={() => openLightbox(3)} className="group block bg-muted aspect-square overflow-hidden w-full relative cursor-zoom-in">
+              <img src={ALBUM_PHOTOS[3].thumb} alt={ALBUM_PHOTOS[3].alt} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </button>
           </Reveal>
           <Reveal delay={0.25}>
-            <div className="bg-muted aspect-square overflow-hidden">
-              <img src={PHOTOS.album5} alt="Bride with decorative umbrella" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-            </div>
+            <button onClick={() => openLightbox(4)} className="group block bg-muted aspect-square overflow-hidden w-full relative cursor-zoom-in">
+              <img src={ALBUM_PHOTOS[4].thumb} alt={ALBUM_PHOTOS[4].alt} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </button>
           </Reveal>
         </div>
         <Reveal delay={0.1} className="mt-6">
