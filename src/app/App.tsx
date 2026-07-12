@@ -196,6 +196,7 @@ export default function App() {
     { href: "#story", label: "Our Story" },
     { href: "#program", label: "Program" },
     { href: "#venue", label: "Venue" },
+    { href: "#info", label: "Info" },
     { href: "#rsvp", label: "RSVP" },
   ];
 
@@ -503,12 +504,79 @@ export default function App() {
         </div>
       </section>
 
+      {/* GUEST INFO */}
+      <section id="info" className="py-24 md:py-32 px-6 md:px-12 max-w-[1200px] mx-auto">
+        <Reveal>
+          <SectionLabel index="05" label="Good to Know" />
+        </Reveal>
+        <div className="grid md:grid-cols-2 gap-1">
+          {/* Dress Code */}
+          <Reveal delay={0.05}>
+            <div className="border border-border p-10 md:p-14 h-full">
+              <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-8">Dress Code</p>
+              <h3
+                className="text-foreground leading-[1.05] mb-6"
+                style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 400 }}
+              >
+                Black Tie<br /><em>Optional</em>
+              </h3>
+              <p className="text-[14px] text-muted-foreground leading-relaxed mb-8">
+                We would love for our guests to dress up with us. Formal attire is warmly encouraged — think floor-length gowns, elegant midi dresses, suits, or tuxedos.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { who: "For her", what: "Floor-length or midi gown, cocktail dress. Heels or elegant flats — the garden has cobblestones, so choose wisely." },
+                  { who: "For him", what: "Tuxedo or dark suit with tie. Black or navy are most welcome; bold colours are a lovely touch." },
+                  { who: "Colours", what: "All colours are welcome. We only ask that guests avoid wearing white or ivory out of respect for the bride." },
+                ].map(({ who, what }) => (
+                  <div key={who} className="flex gap-4 pt-4 border-t border-border">
+                    <span className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground w-20 shrink-0 pt-0.5 uppercase">{who}</span>
+                    <p className="text-[13px] text-foreground leading-relaxed">{what}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Presents */}
+          <Reveal delay={0.1}>
+            <div className="border border-border border-l-0 p-10 md:p-14 h-full">
+              <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-8">Gifts &amp; Presents</p>
+              <h3
+                className="text-foreground leading-[1.05] mb-6"
+                style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 400 }}
+              >
+                Your presence<br /><em>is our gift</em>
+              </h3>
+              <p className="text-[14px] text-muted-foreground leading-relaxed mb-8">
+                Having you with us on this day means more than we can say. Please do not feel any obligation to bring a gift. If you would like to contribute something, we have a few suggestions below.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { label: "Honeymoon Fund", desc: "We are planning a trip to Japan in October. A contribution to our honeymoon would bring us enormous joy — details available on request." },
+                  { label: "Experience Together", desc: "A restaurant booking, a concert, or a weekend away — shared experiences are what we love most. Vouchers or bookings are very welcome." },
+                  { label: "A Handwritten Note", desc: "A card with your words, a memory of us, or a piece of advice for married life is something we will keep forever. No occasion requires more." },
+                ].map(({ label, desc }) => (
+                  <div key={label} className="flex gap-4 pt-4 border-t border-border">
+                    <div className="w-2 h-2 rounded-full bg-foreground shrink-0 mt-1.5" />
+                    <div>
+                      <p className="text-[13px] font-medium mb-1">{label}</p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* RSVP */}
       <section id="rsvp" className="py-24 md:py-32 bg-foreground text-background">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
           <Reveal>
             <div className="flex items-center gap-4 mb-12">
-              <span className="font-mono text-[11px] tracking-[0.2em] text-background/40">05</span>
+              <span className="font-mono text-[11px] tracking-[0.2em] text-background/40">06</span>
               <div className="h-px flex-1 bg-background/20" />
               <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-background/40">RSVP</span>
             </div>
