@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "motion/react";
+import SocialCard from "./SocialCard";
 
 const ALBUM_PHOTOS = [
   { src: "https://images.unsplash.com/photo-1765292783362-91affd475cb7?w=1600&h=2000&fit=crop&auto=format", thumb: "https://images.unsplash.com/photo-1765292783362-91affd475cb7?w=800&h=1000&fit=crop&auto=format", alt: "Couple holding hands outdoors" },
@@ -166,6 +167,54 @@ function SectionLabel({ index, label }: { index: string; label: string }) {
       <div className="h-px flex-1 bg-border" />
       <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted-foreground">{label}</span>
     </div>
+  );
+}
+
+function SocialCardPreview() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const update = () => {
+      if (wrapperRef.current) {
+        setScale(wrapperRef.current.offsetWidth / 1200);
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    if (wrapperRef.current) ro.observe(wrapperRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <section className="py-24 md:py-32 bg-secondary border-t border-border">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-12">
+        <Reveal>
+          <div className="flex items-center gap-4 mb-3">
+            <span className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground">OG</span>
+            <div className="h-px flex-1 bg-border" />
+            <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted-foreground">Social Share Card</span>
+          </div>
+          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground mb-10">
+            1200 × 630 px &nbsp;·&nbsp; Facebook · Twitter/X · Telegram · VK · LinkedIn
+          </p>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <div
+            ref={wrapperRef}
+            className="w-full border border-border"
+            style={{ height: 630 * scale, position: "relative", overflow: "hidden" }}
+          >
+            <div style={{ transformOrigin: "top left", transform: `scale(${scale})`, width: 1200, height: 630 }}>
+              <SocialCard />
+            </div>
+          </div>
+          <p className="font-mono text-[10px] tracking-[0.15em] text-muted-foreground mt-4 uppercase">
+            Scales to any viewport — true dimensions 1200 × 630 px
+          </p>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
@@ -744,6 +793,9 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* SOCIAL CARD PREVIEW */}
+      <SocialCardPreview />
 
       {/* FOOTER */}
       <footer className="border-t border-border py-10 px-6 md:px-12">
